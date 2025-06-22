@@ -102,3 +102,12 @@ lambda_sg = aws.ec2.SecurityGroup("lambda",
     )],
     tags=tags | {"Name": "sillarcv-lambda-sg"}
 )
+
+# Export the subnet IDs and security group ID
+private_subnet_ids = [private_subnet_1.id, private_subnet_2.id]
+security_group_id = lambda_sg.id
+
+# Export the VPC ID
+pulumi.export("vpc_id", vpc.id)
+pulumi.export("private_subnet_ids", private_subnet_ids)
+pulumi.export("lambda_security_group_id", security_group_id)

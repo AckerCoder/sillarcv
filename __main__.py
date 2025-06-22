@@ -5,6 +5,7 @@ from utils import tags
 from dynamo import dynamo_table
 from lambda_function import upload_cv_lambda
 from s3 import cv_bucket
+from analyze_lambda import analyze_cv_lambda
 
 # 1. Crear el rol IAM para API Gateway CloudWatch logs
 api_gateway_log_role = aws.iam.Role("api-gateway-log-role",
@@ -161,10 +162,23 @@ lambda_permission = aws.lambda_.Permission("api-gateway-permission",
     source_arn=pulumi.Output.concat(rest_api.execution_arn, "/*/*/upload-cv")
 )
 
+# Add Lambda trigger for CV analysis
+cv_bucket_notification = aws.s3.BucketNotification("cv-bucket-notification",
+    bucket=cv_bucket.id,
+    lambda_functions=[{
+        "lambda_function_arn": analyze_cv_lambda.arn,
+        "events": ["s3:ObjectCreated:*"],
+        "filter_prefix": "",
+        "filter_suffix": ".pdf"
+    }],
+    opts=pulumi.ResourceOptions(depends_on=[cv_bucket, analyze_cv_lambda])
+)
+
 # Export outputs
 pulumi.export("bucket_name", cv_bucket.bucket)
 pulumi.export("dynamodb_table", dynamo_table.name)
 pulumi.export("lambda_name", upload_cv_lambda.name)
+pulumi.export("analyze_lambda_name", analyze_cv_lambda.name)
 pulumi.export("api_url",
     pulumi.Output.concat(
         "https://",
