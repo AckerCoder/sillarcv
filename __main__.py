@@ -6,6 +6,7 @@ from dynamo import dynamo_table
 from lambda_function import upload_cv_lambda
 from s3 import cv_bucket
 from analyze_lambda import analyze_cv_lambda
+from notify_lambda import notify_lambda
 
 # 1. Crear el rol IAM para API Gateway CloudWatch logs
 api_gateway_log_role = aws.iam.Role("api-gateway-log-role",
@@ -66,7 +67,7 @@ rest_api = aws.apigateway.RestApi("api",
                 "Resource": "execute-api:/*/*/*",
                 "Condition": {
                     "NotIpAddress": {
-                        "aws:SourceIp": "45.177.197.199/32"
+                        "aws:SourceIp": "190.237.34.212/32"
                     }
                 }
             }
@@ -179,6 +180,7 @@ pulumi.export("bucket_name", cv_bucket.bucket)
 pulumi.export("dynamodb_table", dynamo_table.name)
 pulumi.export("lambda_name", upload_cv_lambda.name)
 pulumi.export("analyze_lambda_name", analyze_cv_lambda.name)
+pulumi.export("notify_lambda_name", notify_lambda.name)
 pulumi.export("api_url",
     pulumi.Output.concat(
         "https://",

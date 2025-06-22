@@ -13,6 +13,8 @@ dynamo_table = aws.dynamodb.Table("applications",
     hash_key="cv_file",
     range_key="analyzed_at",
     billing_mode="PAY_PER_REQUEST",
+    stream_enabled=True,
+    stream_view_type="NEW_IMAGE",  # Solo necesitamos la nueva imagen del registro
     global_secondary_indexes=[
         {
             "name": "EmailIndex",
@@ -33,3 +35,6 @@ dynamo_table = aws.dynamodb.Table("applications",
     ],
     tags=tags
 )
+
+# Export the stream ARN for use in the notification Lambda
+pulumi.export("dynamo_stream_arn", dynamo_table.stream_arn)

@@ -18,12 +18,10 @@ upload-cv:
 		exit 1; \
 	fi
 	@echo "Uploading test_cv.pdf to $(API_URL)..."
-	@base64 -i test_cv.pdf > test_cv.b64
 	@curl -v -X POST $(API_URL) \
 		-H "Content-Type: application/pdf" \
 		-H "Content-Disposition: attachment; filename=test_cv.pdf" \
-		--data-binary "@test_cv.b64"
-	@rm test_cv.b64
+		--data-binary "@test_cv.pdf"
 
 logs:
 	@echo "Fetching logs from $(LOG_GROUP)..."
