@@ -35,14 +35,20 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         if 'body' not in event:
             raise ValueError("No body found in the request")
 
-        # API Gateway always sends binary content as base64
+        # Get the body content
         body = event['body']
-        try:
-            body = base64.b64decode(body)
-            logger.info("Successfully decoded base64 body")
-        except Exception as e:
-            logger.error(f"Error decoding base64: {str(e)}")
-            raise ValueError("Invalid base64 content")
+
+        # Check if the body is base64 encoded
+        is_base64_encoded = event.get('isBase64Encoded', False)
+        if is_base64_encoded:
+            try:
+                body = base64.b64decode(body)
+                logger.info("Successfully decoded base64 body")
+            except Exception as e:
+                logger.error(f"Error decoding base64: {str(e)}")
+                raise ValueError("Invalid base64 content")
+        else:
+            logger.info("Body is already in binary format")
 
         # Get the filename from headers or generate one
         headers = event.get('headers', {})
@@ -72,7 +78,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'statusCode': 200,
             'headers': {
                 'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'  # Enable CORS
+                'Access-Control-Allow-Origin': '*'  # Enable CORS for all origins since we're using Referer for security
             },
             'body': json.dumps({
                 'message': 'File uploaded successfully',
@@ -87,7 +93,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'statusCode': 500,
             'headers': {
                 'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'  # Enable CORS
+                'Access-Control-Allow-Origin': '*'  # Enable CORS for all origins since we're using Referer for security
             },
             'body': json.dumps({
                 'error': str(e),
